@@ -396,6 +396,7 @@ const paymentNote = document.getElementById("paymentNote");
 const paymentStatus = document.getElementById("paymentStatus");
 const paymentDialogClose = document.getElementById("paymentDialogClose");
 let selectedPaymentPlan = "fourWeek";
+let pendingPaymentSource = "paywall";
 
 function trackPaymentEvent(eventName, payload = {}) {
   const detail = {
@@ -440,6 +441,7 @@ function getActiveSelectedPaymentPlan() {
 }
 
 function openPaymentReservation(source = "paywall") {
+  pendingPaymentSource = source;
   selectedPaymentPlan = getActiveSelectedPaymentPlan();
   const plan = getPaymentPlan(selectedPaymentPlan);
   const paymentLink = window.PAYMENT_CONFIG?.links?.[selectedPaymentPlan];
@@ -2103,6 +2105,9 @@ if (paymentForm) {
       closePaymentDialog();
       paymentForm.reset();
       if (submitButton) submitButton.textContent = "Reserve Early Access";
+      if (pendingPaymentSource === "plan") {
+        setRoute("lesson");
+      }
     }, 1200);
   });
 }
