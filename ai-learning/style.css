@@ -1487,6 +1487,17 @@ body.landing-mode .ring-value {
   cursor: pointer;
 }
 
+.purchase-test .ghost-action {
+  width: 100%;
+  min-height: 64px;
+  padding: 0 20px;
+  border-radius: 18px;
+  background: #fffefa;
+  box-shadow: inset 0 0 0 1px rgba(36, 77, 61, 0.08);
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1.1;
+}
+
 .landing-nav .ghost-action {
   padding: 10px 16px;
 }
@@ -4496,6 +4507,17 @@ body.landing-mode .page.active:has(.rise-course-lesson) {
   box-shadow: inset 0 0 0 2px rgba(114, 87, 255, 0.28);
 }
 
+.map-path .locked {
+  background: #fbf9ff;
+  opacity: 0.72;
+}
+
+.map-path .locked:hover,
+.map-path .locked:focus-visible {
+  background: #f1edff;
+  opacity: 1;
+}
+
 .map-path span {
   display: grid;
   width: 42px;
@@ -4515,6 +4537,11 @@ body.landing-mode .page.active:has(.rise-course-lesson) {
 .map-path .active span {
   background: linear-gradient(90deg, #7657ff, #2f8cff);
   color: #fff;
+}
+
+.map-path .locked span {
+  background: #e5ddff;
+  color: #6d5bd6;
 }
 
 .map-path strong {
@@ -4544,6 +4571,22 @@ body.landing-mode .page.active:has(.rise-course-lesson) {
   border-radius: 999px;
   background: #ebe6ff;
   color: #5c4bd6;
+}
+
+.lesson-step.locked {
+  opacity: 0.68;
+}
+
+.lesson-step.locked p small {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #ece7ff;
+  color: #5c4bd6;
+  font-size: 12px;
+  font-weight: 950;
 }
 
 .classroom-lesson .lesson-steps {

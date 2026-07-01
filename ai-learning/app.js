@@ -397,6 +397,7 @@ const paymentStatus = document.getElementById("paymentStatus");
 const paymentDialogClose = document.getElementById("paymentDialogClose");
 let selectedPaymentPlan = "fourWeek";
 let pendingPaymentSource = "paywall";
+const freeTrialLessonLimit = 1;
 
 function trackPaymentEvent(eventName, payload = {}) {
   const detail = {
@@ -1669,12 +1670,15 @@ function renderLessonSteps(persona) {
   }));
   fields.lessonSteps.innerHTML = steps
     .map(
-      (step, index) => `
-        <button class="lesson-step ${index === activeLessonTaskIndex ? "active" : ""} ${index < activeLessonTaskIndex ? "done" : ""}" type="button" data-lesson-task="${index}">
+      (step, index) => {
+        const isLocked = index >= freeTrialLessonLimit;
+        return `
+        <button class="lesson-step ${index === activeLessonTaskIndex ? "active" : ""} ${index < activeLessonTaskIndex ? "done" : ""} ${isLocked ? "locked" : ""}" type="button" data-lesson-task="${index}" ${isLocked ? `aria-label="Day ${index + 1} locked. Reserve early access to unlock."` : ""}>
           <span>${index + 1}</span>
-          <p><strong>${step.taskType || `Task ${index + 1}`}</strong>${step.taskTitle}</p>
+          <p><strong>${step.taskType || `Task ${index + 1}`}</strong>${step.taskTitle}${isLocked ? "<small>Locked</small>" : ""}</p>
         </button>
-      `
+      `;
+      }
     )
     .join("");
 }
@@ -1682,7 +1686,7 @@ function renderLessonSteps(persona) {
 function renderCourseMap(persona) {
   if (!fields.courseMapPath) return;
   const tasks = persona.courseTasks || ["reason", "sequence", "join", "social", "confidence", "organize", "character"].map(createTask);
-  const dayLabels = ["Today", "Preview", "Preview", "Preview", "Preview", "Preview", "Preview"];
+  const dayLabels = ["Today", "Locked", "Locked", "Locked", "Locked", "Locked", "Locked"];
   fields.courseMapPath.innerHTML = tasks
     .slice(0, 7)
     .map((task, index) => {
@@ -1693,11 +1697,11 @@ function renderCourseMap(persona) {
         index === 3 ? "Disagree politely" :
         task.taskType;
       const classes = [
-        index === 0 ? "done" : "preview",
+        index < freeTrialLessonLimit ? "done" : "locked",
         isActive ? "active" : ""
       ].filter(Boolean).join(" ");
       return `
-        <button type="button" class="${classes}" data-course-day="${index}" aria-label="Preview Day ${index + 1}: ${escapeHtml(task.taskTitle)}">
+        <button type="button" class="${classes}" data-course-day="${index}" aria-label="${index >= freeTrialLessonLimit ? "Locked" : "Open"} Day ${index + 1}: ${escapeHtml(task.taskTitle)}">
           <span>${index + 1}</span>
           <strong>${escapeHtml(title)}<em>${escapeHtml(task.taskTitle)}</em></strong>
           <small>${isActive ? "Open" : dayLabels[index] || "Preview"}</small>
@@ -1814,6 +1818,10 @@ function updateReportForTask(persona, task = persona.courseTasks?.[activeLessonT
 function selectLessonTask(index) {
   const persona = personas[currentPersona];
   if (!persona.courseTasks || !persona.courseTasks[index]) return;
+  if (index >= freeTrialLessonLimit) {
+    openPaymentReservation("locked_day");
+    return;
+  }
   activeLessonTaskIndex = index;
   resetTrialState();
   applyLessonTask(persona);
