@@ -20,9 +20,9 @@ const personas = {
     taskType: "Story Expression",
     taskTitle: "Retell the story in three clear sentences.",
 	    taskBody: "The AI listens first, then asks one follow-up question to test whether the child can add the missing reason.",
-    hero: "Find your child's expression gap in 3 minutes.",
+    hero: "Find what is holding back your child's speaking confidence.",
     challengeTitle: "Assessment → Result → Course → Interaction → Report",
-    challengeCopy: "A short expression assessment becomes a focused 7-day course with daily AI coaching and a parent-ready report.",
+    challengeCopy: "A short speaking quiz becomes one free AI lesson and a focused 7-day practice plan.",
     teacherTitle: "The AI found one missing piece: the reason behind the action.",
     unlockTitle: "Reason Link Lv.1",
     unlockCopy: "Use one reason sentence to explain why the character acted.",
@@ -508,9 +508,9 @@ function savePaymentReservation(email, note) {
 const quizSteps = [
   {
     type: "question",
-    category: "Profile",
-    question: "How old is your child?",
-    hint: "The course changes by age because expression skills develop in stages.",
+    category: "2-Min Speaking Quiz",
+    question: "First, how old is your child?",
+    hint: "Age helps us choose the right speaking scene and coaching language.",
     options: [
       ["6-7", "Early reader"],
       ["8-10", "Growing speaker"],
@@ -650,8 +650,8 @@ const quizSteps = [
   {
     type: "insight",
     category: "Trial Ready",
-    question: "Your child's first speaking trial is ready.",
-    hint: "We will test one skill first: can your child turn a short answer into a reason-based answer after one coach example?",
+    question: "Your child's free speaking trial is ready.",
+    hint: "We will test one skill first: can your child turn a short answer into a clearer answer after one coach example?",
     options: []
   }
 ];
@@ -1439,7 +1439,7 @@ function getStageSummary() {
   if (missingPiece === 2) risk += 1;
   if (whyResponse <= 2) risk += 1;
   const level = risk >= 4 ? "Stage 2" : risk >= 3 ? "Stage 1+" : "Stage 1";
-  const label = risk >= 4 ? "Needs guided structure" : risk >= 3 ? "Emerging expression" : "Ready for coached trial";
+  const label = risk >= 4 ? "Needs guided structure" : risk >= 3 ? "Emerging expression" : "Ready for coached practice";
   const comments = {
     0: "The questionnaire suggests a classroom answering gap. The first trial should make speaking feel safe and structured.",
     1: "The questionnaire points to story explanation. The first trial should test whether the child can connect an answer to a clear reason.",
@@ -1448,7 +1448,7 @@ function getStageSummary() {
   };
   const reasonGap = missingPiece === 2 || whyResponse <= 2 || explainBehavior <= 1;
   const comment = reasonGap
-    ? "The strongest signal is a reason gap: your child may answer, but not yet explain why. Day 1 tests Choice + Because + Example."
+    ? "The strongest signal is a reason gap: your child may answer, but not yet explain why. Day 1 trains Choice + Because + Example."
     : comments[primaryMoment] || "The first trial should capture one real answer before making a stronger claim.";
   return {
     score: `${level}: ${label}`,
@@ -1480,7 +1480,7 @@ function getQuizPlanInsight() {
       ? `Right now, your child may understand the answer but stop at "${explainSignal.toLowerCase()}."`
       : `Right now, your child can answer, but the assessment still points to "${missingSignal.toLowerCase()}."`,
     goal: `The target is a child who can become a ${goalSignal.toLowerCase()}: one clear choice, one reason, and one example.`,
-    recommendation: "Recommended paid track: 7-Day Reason Builder",
+    recommendation: "Recommended track: 7-Day Reason Builder",
     reason: summary.comment
   };
 }
@@ -1570,7 +1570,7 @@ function buildCourseFromQuizAnswers() {
     unlockCopy: firstTask.unlockCopy,
 	    tomorrowTitle: tasks[1]?.taskType || "Story Sequence",
 	    tomorrowCopy: tasks[1]?.taskTitle || "Use first, then, and finally to retell the story clearly.",
-    progress: `${recommendationReason} ${courseRationale} This is only a pre-trial recommendation until the child records an answer.`,
+    progress: `${recommendationReason} ${courseRationale} The free trial will capture one real answer before making a stronger recommendation.`,
     next: `Tomorrow's lesson will train ${tasks[1]?.checkFocus || "story sequence"}.`,
     reportQuizSignal: `${recommendationReason} ${courseRationale}`,
     reportEvidence: `The first trial will check one method: "${firstTask.method}". Pass standard: ${firstTask.rubric.join(" / ")}.`,
@@ -1767,26 +1767,26 @@ function updateReportForTask(persona, task = persona.courseTasks?.[activeLessonT
   const currentDay = activeLessonTaskIndex + 1;
   renderTrialEvidenceCards(task);
   if (!trialState.completed) {
-    fields.reportHeroTitle.textContent = `Day ${currentDay} speaking trial is ready.`;
+    fields.reportHeroTitle.textContent = `Your child's Day ${currentDay} speaking profile is ready.`;
     fields.reportStatus.textContent = trialState.firstSubmitted
       ? `${summary.score}. Baseline answer saved. Coached retry not completed yet.`
-      : `${summary.score}. Based on parent answers only.`;
+      : `${summary.score}. Based on the quiz answers.`;
     fields.reportQuizSignal.textContent = trialState.firstSubmitted
       ? `Baseline captured for Day ${currentDay}: ${task.taskType}. The retry should use ${task.method}.`
-      : `Selected lesson: Day ${currentDay} ${task.taskType}. This trial checks whether the child can use ${task.method} in a real speaking scene.`;
+      : `Recommended first lesson: Day ${currentDay} ${task.taskType}. It checks whether your child can use ${task.method} in a real speaking scene.`;
     fields.scoreText.textContent = trialState.firstSubmitted ? "Baseline" : "Pre-trial";
     fields.progressText.textContent = trialState.firstSubmitted
       ? "One real answer is saved. The next step is to see whether the child can improve after one coach example."
-      : `Recommended trial: "${task.taskTitle}"`;
+      : `Free trial lesson: "${task.taskTitle}"`;
     fields.reportEvidence.textContent = trialState.firstSubmitted
       ? `Teacher note: the first answer gives us a baseline. Ask the child to retry with ${task.method}; then the report can show the before/after change.`
-      : `What we can infer: this selected trial will test ${task.checkFocus}. No child response has been submitted yet, so the report will not score the child until one first try and one coached retry are completed.`;
+      : `What we can infer: the main gap to test is ${task.checkFocus}. A full score appears after one first try and one coached retry.`;
     fields.nextText.textContent = trialState.firstSubmitted
       ? "Return to the trial lesson and complete the improved answer."
-      : `Start Day ${currentDay} to test ${task.method} with one real spoken response.`;
-    fields.reportIntro.textContent = "This is a parent-facing pre-trial summary for the selected lesson. A real report appears after the child completes one first answer and one coached retry.";
-    fields.reportUnlock.textContent = "Paid plan recommended";
-    fields.reportUnlockCopy.textContent = "Unlock coached trials, daily practice scenes, and parent reports with the 7-day plan.";
+      : `Start the free trial to test ${task.method} with one real spoken response.`;
+    fields.reportIntro.textContent = "This profile gives parents one clear starting point before the child begins the free lesson.";
+    fields.reportUnlock.textContent = "7-Day Plan Preview";
+    fields.reportUnlockCopy.textContent = "After the free trial, the next lessons unlock daily coached scenes, AI feedback, and parent summaries.";
     fields.tomorrowTitle.textContent = `Day ${currentDay}: ${task.taskType}`;
     fields.tomorrowCopy.textContent = task.taskTitle;
     fields.reportCta.textContent = "Reserve Early Access";
@@ -1794,20 +1794,20 @@ function updateReportForTask(persona, task = persona.courseTasks?.[activeLessonT
     fields.reportCta.dataset.paymentTrigger = "report";
     return;
   }
-  fields.reportHeroTitle.textContent = "Trial result: one small speaking habit can be trained.";
-  fields.reportStatus.textContent = `${summary.score}. Questionnaire signal plus one completed trial.`;
+  fields.reportHeroTitle.textContent = "Trial result: your child improved one speaking habit.";
+  fields.reportStatus.textContent = `${summary.score}. Quiz signal plus one completed speaking trial.`;
   fields.reportQuizSignal.textContent = `Completed trial: Day ${currentDay} ${task.taskType}. The report is based on the child's first answer, coached retry, and the ${task.method} frame.`;
   fields.scoreText.textContent = trialState.passed ? "Ready" : "Practice";
-  fields.progressText.textContent = "This report uses the child's first answer and improved answer from this session only.";
+  fields.progressText.textContent = "This report compares the child's first answer with the coached retry from this session.";
   fields.reportEvidence.textContent = `Teacher note: ${describeAnswerGrowth(task)}`;
   fields.nextText.textContent = nextTask && nextTask !== task
     ? `Next lesson trains ${nextTask.taskType}: ${nextTask.taskTitle}`
     : `Next lesson repeats ${task.taskType} with a harder scene.`;
-  fields.reportIntro.textContent = "This is the proof point for the parent: the child did not just watch a lesson, they produced an answer, received a frame, and tried again.";
+  fields.reportIntro.textContent = "This is the proof point: the child produced an answer, received a frame, and tried again.";
   fields.reportUnlock.textContent = trialState.passed ? "7-Day Plan Recommended" : `Repeat Day ${currentDay} Recommended`;
   fields.reportUnlockCopy.textContent = trialState.passed
-    ? `${task.unlockCopy} The next paid step should unlock daily coached scenes, AI feedback, and parent summaries.`
-    : "The child needs another guided attempt before a harder lesson. The paid plan should repeat this skill with easier examples first.";
+    ? `${task.unlockCopy} The 7-day plan continues with daily coached scenes, AI feedback, and parent summaries.`
+    : "The child needs another guided attempt before a harder lesson. The 7-day plan should repeat this skill with easier examples first.";
   fields.reportCta.textContent = "Reserve Early Access";
   fields.reportCta.removeAttribute("data-go");
   fields.reportCta.dataset.paymentTrigger = "report";
@@ -1926,7 +1926,7 @@ function renderQuiz() {
 	        <article class="course-recommendation-card">
 	          <span>Course recommendation</span>
 	          <strong>${insight.recommendation}</strong>
-	          <p>Why this track: parent selected "${insight.momentSignal}", the missing piece was "${insight.missingSignal}", and the first paid lesson tests whether one coach example can improve the answer.</p>
+	          <p>Why this track: parent selected "${insight.momentSignal}", the missing piece was "${insight.missingSignal}", and the free trial checks whether one coach example can improve the answer.</p>
 	        </article>
 	      </div>
 	    `;
