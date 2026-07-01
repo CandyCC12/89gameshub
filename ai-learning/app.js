@@ -388,6 +388,120 @@ const quizNodes = {
   footerText: document.getElementById("quizFooterText")
 };
 
+const paymentDialog = document.getElementById("paymentDialog");
+const paymentForm = document.getElementById("paymentReservationForm");
+const paymentSummary = document.getElementById("paymentSummary");
+const paymentEmail = document.getElementById("paymentEmail");
+const paymentNote = document.getElementById("paymentNote");
+const paymentStatus = document.getElementById("paymentStatus");
+const paymentDialogClose = document.getElementById("paymentDialogClose");
+let selectedPaymentPlan = "fourWeek";
+
+function trackPaymentEvent(eventName, payload = {}) {
+  const detail = {
+    event: eventName,
+    route: document.querySelector(".page.active")?.dataset.page || "unknown",
+    timestamp: new Date().toISOString(),
+    ...payload
+  };
+  window.dispatchEvent(new CustomEvent("payment_funnel_event", { detail }));
+  if (window.dataLayer) window.dataLayer.push(detail);
+  console.info("[payment]", detail);
+}
+
+function getPaymentPlan(planKey = selectedPaymentPlan) {
+  return window.PAYMENT_CONFIG?.plans?.[planKey] || {
+    name: "4-WEEK PLAN",
+    price: "$19.99",
+    label: "Most popular"
+  };
+}
+
+function syncSelectedPaymentPlan(card) {
+  const groupName = card.querySelector("input")?.name;
+  if (!groupName) return;
+  document.querySelectorAll(`.price-option input[name="${groupName}"]`).forEach((input) => {
+    const option = input.closest(".price-option");
+    const isSelected = option === card;
+    option?.classList.toggle("selected", isSelected);
+    input.checked = isSelected;
+  });
+  selectedPaymentPlan = card.dataset.planKey || card.querySelector("input")?.value || selectedPaymentPlan;
+  trackPaymentEvent("plan_select", {
+    plan_key: selectedPaymentPlan,
+    plan_name: getPaymentPlan(selectedPaymentPlan).name
+  });
+}
+
+function getActiveSelectedPaymentPlan() {
+  const activePage = document.querySelector(".page.active") || document;
+  const checked = activePage.querySelector(".price-option input:checked");
+  return checked?.closest(".price-option")?.dataset.planKey || selectedPaymentPlan;
+}
+
+function openPaymentReservation(source = "paywall") {
+  selectedPaymentPlan = getActiveSelectedPaymentPlan();
+  const plan = getPaymentPlan(selectedPaymentPlan);
+  const paymentLink = window.PAYMENT_CONFIG?.links?.[selectedPaymentPlan];
+  trackPaymentEvent("payment_intent_click", {
+    source,
+    mode: window.PAYMENT_CONFIG?.mode || "reservation",
+    plan_key: selectedPaymentPlan,
+    plan_name: plan.name,
+    price: plan.price
+  });
+
+  if (window.PAYMENT_CONFIG?.mode === "link" && paymentLink) {
+    window.location.href = paymentLink;
+    return;
+  }
+
+  if (!paymentDialog) return;
+  if (paymentSummary) paymentSummary.textContent = `${plan.name} · ${plan.price} · ${plan.label}`;
+  if (paymentStatus) paymentStatus.textContent = "";
+  if (typeof paymentDialog.showModal === "function") {
+    paymentDialog.showModal();
+  } else {
+    paymentDialog.setAttribute("open", "");
+  }
+  window.setTimeout(() => paymentEmail?.focus(), 50);
+}
+
+function closePaymentDialog() {
+  if (!paymentDialog) return;
+  if (typeof paymentDialog.close === "function") {
+    paymentDialog.close();
+  } else {
+    paymentDialog.removeAttribute("open");
+  }
+}
+
+function savePaymentReservation(email, note) {
+  const plan = getPaymentPlan(selectedPaymentPlan);
+  const record = {
+    product: window.PAYMENT_CONFIG?.product || "89 AI Expression Camp",
+    planKey: selectedPaymentPlan,
+    planName: plan.name,
+    price: plan.price,
+    email,
+    note,
+    createdAt: new Date().toISOString()
+  };
+  try {
+    const records = JSON.parse(localStorage.getItem("paymentReservations") || "[]");
+    records.push(record);
+    localStorage.setItem("paymentReservations", JSON.stringify(records));
+  } catch (error) {
+    console.warn("[payment] reservation storage failed", error);
+  }
+  trackPaymentEvent("payment_reservation_submit", {
+    plan_key: record.planKey,
+    plan_name: record.planName,
+    price: record.price
+  });
+  return record;
+}
+
 const quizSteps = [
   {
     type: "question",
@@ -1669,8 +1783,9 @@ function updateReportForTask(persona, task = persona.courseTasks?.[activeLessonT
     fields.reportUnlockCopy.textContent = "Unlock coached trials, daily practice scenes, and parent reports with the 7-day plan.";
     fields.tomorrowTitle.textContent = `Day ${currentDay}: ${task.taskType}`;
     fields.tomorrowCopy.textContent = task.taskTitle;
-    fields.reportCta.textContent = "Get My Plan";
-    fields.reportCta.dataset.go = "plan";
+    fields.reportCta.textContent = "Reserve Early Access";
+    fields.reportCta.removeAttribute("data-go");
+    fields.reportCta.dataset.paymentTrigger = "report";
     return;
   }
   fields.reportHeroTitle.textContent = "Trial result: one small speaking habit can be trained.";
@@ -1687,8 +1802,9 @@ function updateReportForTask(persona, task = persona.courseTasks?.[activeLessonT
   fields.reportUnlockCopy.textContent = trialState.passed
     ? `${task.unlockCopy} The next paid step should unlock daily coached scenes, AI feedback, and parent summaries.`
     : "The child needs another guided attempt before a harder lesson. The paid plan should repeat this skill with easier examples first.";
-  fields.reportCta.textContent = "Get My Plan";
-  fields.reportCta.dataset.go = "plan";
+  fields.reportCta.textContent = "Reserve Early Access";
+  fields.reportCta.removeAttribute("data-go");
+  fields.reportCta.dataset.paymentTrigger = "report";
   fields.tomorrowTitle.textContent = nextTask?.taskType || persona.tomorrowTitle;
   fields.tomorrowCopy.textContent = nextTask?.taskTitle || persona.tomorrowCopy;
 }
@@ -1949,7 +2065,46 @@ document.querySelectorAll("[data-go]").forEach((button) => {
 });
 
 if (fields.reportCta) {
-  fields.reportCta.addEventListener("click", () => setRoute(fields.reportCta.dataset.go));
+  fields.reportCta.addEventListener("click", () => {
+    if (fields.reportCta.dataset.go) setRoute(fields.reportCta.dataset.go);
+  });
+}
+
+document.querySelectorAll(".price-option").forEach((card) => {
+  card.addEventListener("click", () => syncSelectedPaymentPlan(card));
+});
+
+document.querySelectorAll("[data-payment-trigger]").forEach((button) => {
+  button.addEventListener("click", () => openPaymentReservation(button.dataset.paymentTrigger));
+});
+
+if (paymentDialogClose) {
+  paymentDialogClose.addEventListener("click", closePaymentDialog);
+}
+
+if (paymentDialog) {
+  paymentDialog.addEventListener("click", (event) => {
+    if (event.target === paymentDialog) closePaymentDialog();
+  });
+}
+
+if (paymentForm) {
+  paymentForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const email = paymentEmail?.value.trim();
+    if (!email) return;
+    savePaymentReservation(email, paymentNote?.value.trim() || "");
+    if (paymentStatus) {
+      paymentStatus.textContent = "Reserved. We will send access when checkout opens.";
+    }
+    const submitButton = paymentForm.querySelector("button[type='submit']");
+    if (submitButton) submitButton.textContent = "Reservation Saved";
+    window.setTimeout(() => {
+      closePaymentDialog();
+      paymentForm.reset();
+      if (submitButton) submitButton.textContent = "Reserve Early Access";
+    }, 1200);
+  });
 }
 
 if (quizNodes.options) {

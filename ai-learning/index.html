@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>89 AI School Demo</title>
-    <link rel="stylesheet" href="./style.css?v=20260615-day-path-2" />
+    <link rel="stylesheet" href="./style.css?v=20260701-payment-intent-1" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5502975373459743" crossorigin="anonymous"></script>
   </head>
   <body class="landing-mode">
@@ -147,7 +147,7 @@
           <section class="personal-plan">
             <div class="sticky-plan-cta">
               <span>7-day expression plan</span>
-              <button type="button" data-go="lesson">Get My Plan</button>
+              <button type="button" data-payment-trigger="plan">Reserve Plan</button>
             </div>
             <div class="mini-brand">89 AI Expression Camp</div>
             <h1>Your child may not need more worksheets. <span>They need practice for real school moments.</span></h1>
@@ -170,16 +170,16 @@
                 </ul>
               </div>
               <div class="report-pricing plan-pricing" aria-label="Subscription plans">
-                <label class="price-option">
-                  <input type="radio" name="coursePlan" />
+                <label class="price-option" data-plan-key="week">
+                  <input type="radio" name="coursePlan" value="week" />
                   <span class="plan-radio"></span>
                   <span class="price-name">1-WEEK PLAN</span>
                   <span class="price-total"><s>$9.99</s> $4.99</span>
                   <span class="price-daily"><s>$1.43</s><strong>$0.71</strong><em>per day</em></span>
                 </label>
 
-                <label class="price-option selected">
-                  <input type="radio" name="coursePlan" checked />
+                <label class="price-option selected" data-plan-key="fourWeek">
+                  <input type="radio" name="coursePlan" value="fourWeek" checked />
                   <span class="popular-badge">★ MOST POPULAR</span>
                   <span class="plan-radio"></span>
                   <span class="price-name">4-WEEK PLAN</span>
@@ -187,16 +187,16 @@
                   <span class="price-daily"><s>$1.43</s><strong>$0.71</strong><em>per day</em></span>
                 </label>
 
-                <label class="price-option">
-                  <input type="radio" name="coursePlan" />
+                <label class="price-option" data-plan-key="twentyFourWeek">
+                  <input type="radio" name="coursePlan" value="twentyFourWeek" />
                   <span class="plan-radio"></span>
                   <span class="price-name">24-WEEK PLAN</span>
                   <span class="price-total"><s>$149.99</s> $74.99</span>
                   <span class="price-daily"><s>$0.89</s><strong>$0.45</strong><em>per day</em></span>
                 </label>
               </div>
-              <p class="guarantee-line">This test does not process payment yet. Clicking below means the parent is willing to start the paid plan.</p>
-              <button class="primary-action" type="button" data-go="lesson">Get My Plan</button>
+              <p class="guarantee-line">This is an early payment-intent test. Reserve the selected plan and we will notify you when checkout opens.</p>
+              <button class="primary-action" type="button" data-payment-trigger="plan">Reserve Early Access</button>
               <button class="secondary-action" type="button" data-go="landing">Retake Assessment</button>
             </section>
           </section>
@@ -877,16 +877,16 @@
 		              <h2>Continue with a paid plan</h2>
 
 	              <div class="report-pricing" aria-label="Subscription plans">
-	                <label class="price-option">
-	                  <input type="radio" name="reportPlan" />
+	                <label class="price-option" data-plan-key="week">
+	                  <input type="radio" name="reportPlan" value="week" />
 	                  <span class="plan-radio"></span>
 	                  <span class="price-name">1-WEEK PLAN</span>
 	                  <span class="price-total"><s>$9.99</s> $4.99</span>
 	                  <span class="price-daily"><s>$1.43</s><strong>$0.71</strong><em>per day</em></span>
 	                </label>
 
-	                <label class="price-option selected">
-	                  <input type="radio" name="reportPlan" checked />
+	                <label class="price-option selected" data-plan-key="fourWeek">
+	                  <input type="radio" name="reportPlan" value="fourWeek" checked />
 	                  <span class="popular-badge">★ MOST POPULAR</span>
 	                  <span class="plan-radio"></span>
 	                  <span class="price-name">4-WEEK PLAN</span>
@@ -894,8 +894,8 @@
 	                  <span class="price-daily"><s>$1.43</s><strong>$0.71</strong><em>per day</em></span>
 	                </label>
 
-	                <label class="price-option">
-	                  <input type="radio" name="reportPlan" />
+	                <label class="price-option" data-plan-key="twentyFourWeek">
+	                  <input type="radio" name="reportPlan" value="twentyFourWeek" />
 	                  <span class="plan-radio"></span>
 	                  <span class="price-name">24-WEEK PLAN</span>
 	                  <span class="price-total"><s>$149.99</s> $74.99</span>
@@ -904,8 +904,8 @@
 	              </div>
 
 	              <div class="report-cta">
-	                <button class="primary-action" type="button" id="reportCta" data-go="plan">Get My Plan</button>
-	                <p>Unlock the first guided lesson, daily AI speaking practice, and parent reports.</p>
+	                <button class="primary-action" type="button" id="reportCta" data-payment-trigger="report">Reserve Early Access</button>
+	                <p>Reserve the selected plan now. This tests whether parents are willing to pay before checkout is connected.</p>
 	              </div>
 
 	              <div class="tomorrow-card">
@@ -922,6 +922,29 @@
       </main>
     </div>
 
-    <script src="./app.js?v=20260623-day7-final-video"></script>
+    <dialog class="payment-dialog" id="paymentDialog" aria-labelledby="paymentDialogTitle">
+      <form class="payment-card" id="paymentReservationForm" method="dialog">
+        <button class="payment-close" type="button" id="paymentDialogClose" aria-label="Close">×</button>
+        <p class="eyebrow">Early Access</p>
+        <h2 id="paymentDialogTitle">Reserve this expression plan</h2>
+        <p class="payment-summary" id="paymentSummary">4-WEEK PLAN · $19.99</p>
+        <p class="payment-copy">
+          Checkout is not open yet. Leave an email if you would be willing to buy this plan when payment opens.
+        </p>
+        <label class="payment-field">
+          Parent email
+          <input id="paymentEmail" name="email" type="email" placeholder="parent@example.com" autocomplete="email" required />
+        </label>
+        <label class="payment-field">
+          Note optional
+          <textarea id="paymentNote" name="note" rows="3" placeholder="Anything we should know about your child's speaking goal?"></textarea>
+        </label>
+        <button class="primary-action" type="submit">Reserve Early Access</button>
+        <p class="payment-status" id="paymentStatus" role="status"></p>
+      </form>
+    </dialog>
+
+    <script src="./payment-config.js?v=20260701-payment-intent-1"></script>
+    <script src="./app.js?v=20260701-payment-intent-1"></script>
   </body>
 </html>
