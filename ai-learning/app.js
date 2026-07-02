@@ -399,16 +399,35 @@ let selectedPaymentPlan = "fourWeek";
 let pendingPaymentSource = "paywall";
 const freeTrialLessonLimit = 1;
 
-function trackPaymentEvent(eventName, payload = {}) {
+function trackLearningEvent(eventName, payload = {}) {
+  const route = document.querySelector(".page.active")?.dataset.page || "unknown";
+  const task = personas[currentPersona]?.courseTasks?.[activeLessonTaskIndex];
   const detail = {
-    event: eventName,
-    route: document.querySelector(".page.active")?.dataset.page || "unknown",
-    timestamp: new Date().toISOString(),
+    content_type: "ai_learning",
+    page_category: "solution_landing",
+    solution_vertical: "ai_learning",
+    product: "89 AI Expression Camp",
+    route,
+    lesson_day: activeLessonTaskIndex + 1,
+    lesson_key: task?.key || "",
+    lesson_type: task?.taskType || "",
     ...payload
   };
-  window.dispatchEvent(new CustomEvent("payment_funnel_event", { detail }));
-  if (window.dataLayer) window.dataLayer.push(detail);
-  console.info("[payment]", detail);
+  if (window.ArcadeHubAnalytics?.track) {
+    window.ArcadeHubAnalytics.track(eventName, detail);
+    return;
+  }
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: eventName, arcade_event: eventName, ...detail });
+  if (typeof window.gtag === "function") window.gtag("event", eventName, detail);
+  console.info("[learning]", eventName, detail);
+}
+
+function trackPaymentEvent(eventName, payload = {}) {
+  trackLearningEvent(eventName, {
+    funnel_category: "payment_intent",
+    ...payload
+  });
 }
 
 function getPaymentPlan(planKey = selectedPaymentPlan) {
@@ -430,6 +449,7 @@ function syncSelectedPaymentPlan(card) {
   });
   selectedPaymentPlan = card.dataset.planKey || card.querySelector("input")?.value || selectedPaymentPlan;
   trackPaymentEvent("plan_select", {
+    funnel_step: "plan",
     plan_key: selectedPaymentPlan,
     plan_name: getPaymentPlan(selectedPaymentPlan).name
   });
@@ -447,6 +467,7 @@ function openPaymentReservation(source = "paywall") {
   const plan = getPaymentPlan(selectedPaymentPlan);
   const paymentLink = window.PAYMENT_CONFIG?.links?.[selectedPaymentPlan];
   trackPaymentEvent("payment_intent_click", {
+    funnel_step: "paywall",
     source,
     mode: window.PAYMENT_CONFIG?.mode || "reservation",
     plan_key: selectedPaymentPlan,
@@ -498,6 +519,7 @@ function savePaymentReservation(email, note) {
     console.warn("[payment] reservation storage failed", error);
   }
   trackPaymentEvent("payment_reservation_submit", {
+    funnel_step: "reservation",
     plan_key: record.planKey,
     plan_name: record.planName,
     price: record.price
@@ -1121,6 +1143,12 @@ function setTeacherSegment(segment = "intro", shouldSpeak = false) {
   if (fields.teacherStage) fields.teacherStage.textContent = script.stage;
   if (fields.teacherLine) fields.teacherLine.textContent = script.line;
   setLessonFlowStep(segment === "intro" ? "intro" : "speak");
+  trackLearningEvent("learning_teacher_segment_view", {
+    funnel_step: "lesson",
+    teacher_segment: segment,
+    teacher_stage: script.stage,
+    audio_requested: Boolean(shouldSpeak)
+  });
   if (shouldSpeak) speakLine(script.line);
 }
 
@@ -1288,6 +1316,12 @@ function saveRecordedAnswer(blob, transcript, phase) {
     transcript: transcript || "",
     createdAt: Date.now()
   });
+  trackLearningEvent("learning_voice_record_saved", {
+    funnel_step: "lesson",
+    recording_phase: phase,
+    has_transcript: Boolean(transcript),
+    recording_count: trialState.recordings.length
+  });
   if (transcript) {
     fields.voiceStatus.textContent = `Recording saved. Heard: "${transcript}"`;
     submitSpokenAnswer(transcript);
@@ -1319,18 +1353,30 @@ function stopRecording() {
 
 async function captureVoiceAttempt(phase) {
   if (activeRecorder && activeRecorder.state === "recording") {
+    trackLearningEvent("learning_voice_record_stop", {
+      funnel_step: "lesson",
+      recording_phase: activeRecordingPhase || phase
+    });
     stopRecording();
     return;
   }
   const persona = personas[currentPersona];
   const task = persona.courseTasks?.[activeLessonTaskIndex];
   if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    trackLearningEvent("learning_voice_record_unavailable", {
+      funnel_step: "lesson",
+      recording_phase: phase
+    });
     fields.voiceStatus.textContent = "Real recording is not supported in this browser. Use Chrome/Safari with microphone permission.";
     fields.voiceScore.textContent = "No recorder";
     return;
   }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    trackLearningEvent("learning_voice_record_start", {
+      funnel_step: "lesson",
+      recording_phase: phase
+    });
     activeRecordingChunks = [];
     activeTranscript = "";
     activeRecordingPhase = phase;
@@ -1371,6 +1417,10 @@ async function captureVoiceAttempt(phase) {
     const activeButton = phase === "first" ? fields.recordFirst : fields.recordSecond;
     if (activeButton) activeButton.textContent = "Stop recording";
   } catch (error) {
+    trackLearningEvent("learning_voice_record_blocked", {
+      funnel_step: "lesson",
+      recording_phase: phase
+    });
     fields.voiceStatus.textContent = "Microphone permission was not granted, so recording could not start.";
     fields.voiceScore.textContent = "Mic blocked";
   }
@@ -1819,10 +1869,22 @@ function selectLessonTask(index) {
   const persona = personas[currentPersona];
   if (!persona.courseTasks || !persona.courseTasks[index]) return;
   if (index >= freeTrialLessonLimit) {
+    trackLearningEvent("learning_locked_lesson_click", {
+      funnel_step: "lesson",
+      locked_day: index + 1,
+      locked_lesson_key: persona.courseTasks[index].key,
+      locked_lesson_type: persona.courseTasks[index].taskType
+    });
     openPaymentReservation("locked_day");
     return;
   }
   activeLessonTaskIndex = index;
+  trackLearningEvent("learning_lesson_select", {
+    funnel_step: "lesson",
+    selected_day: index + 1,
+    selected_lesson_key: persona.courseTasks[index].key,
+    selected_lesson_type: persona.courseTasks[index].taskType
+  });
   resetTrialState();
   applyLessonTask(persona);
   renderLessonSteps(persona);
@@ -2015,6 +2077,7 @@ function setPersona(key) {
 function setRoute(route) {
   const safeRoute = ["landing", "loading", "plan", "lesson", "report"].includes(route) ? route : "landing";
   const funnelRoutes = ["landing", "loading", "plan", "lesson", "report"];
+  const previousRoute = document.querySelector(".page.active")?.dataset.page || "";
   if (safeRoute === "landing") {
     quizIndex = 0;
     quizAnswers.fill(null);
@@ -2035,6 +2098,10 @@ function setRoute(route) {
   }
 
   window.scrollTo({ top: 0, behavior: "instant" });
+  trackLearningEvent("learning_funnel_step_view", {
+    funnel_step: safeRoute,
+    previous_step: previousRoute
+  });
 }
 
 function aiReplyFor(text, persona) {
@@ -2125,6 +2192,14 @@ if (quizNodes.options) {
     const option = event.target.closest("[data-quiz-option]");
     if (!option) return;
     quizAnswers[quizIndex] = Number(option.dataset.quizOption);
+    const step = quizSteps[quizIndex];
+    trackLearningEvent("learning_quiz_answer", {
+      funnel_step: "quiz",
+      quiz_step: quizIndex + 1,
+      quiz_question: step.question,
+      quiz_answer_index: quizAnswers[quizIndex],
+      quiz_answer_text: step.options?.[quizAnswers[quizIndex]]?.[1] || ""
+    });
     renderQuiz();
   });
 }
@@ -2136,6 +2211,11 @@ function continueQuiz() {
   if (quizSteps[quizIndex].type !== "insight" && quizAnswers[quizIndex] === null) return;
   quizAdvanceLocked = true;
   if (quizIndex < quizSteps.length - 1) {
+    trackLearningEvent("learning_quiz_step_complete", {
+      funnel_step: "quiz",
+      quiz_step: quizIndex + 1,
+      next_quiz_step: quizIndex + 2
+    });
     quizIndex += 1;
     renderQuiz();
     window.setTimeout(() => {
@@ -2145,6 +2225,10 @@ function continueQuiz() {
   }
   buildCourseFromQuizAnswers();
   setPersona("child");
+  trackLearningEvent("learning_quiz_complete", {
+    funnel_step: "quiz",
+    total_questions: quizSteps.length
+  });
   setRoute("plan");
   window.setTimeout(() => {
     quizAdvanceLocked = false;
@@ -2196,6 +2280,10 @@ document.querySelectorAll("[data-hint]").forEach((button) => {
 if (fields.playAiLine) {
   fields.playAiLine.addEventListener("click", () => {
     setLessonFlowStep("model");
+    trackLearningEvent("learning_model_line_play", {
+      funnel_step: "lesson",
+      audio_type: "model_line"
+    });
     modelLineAudio.currentTime = 0;
     modelLineAudio.play().catch(() => {
       const task = personas[currentPersona].courseTasks?.[activeLessonTaskIndex];
@@ -2373,6 +2461,7 @@ fields.answerForm.addEventListener("submit", (event) => {
   const answer = fields.answerInput.value.trim();
   const result = task ? evaluateTrialAnswer(answer, task) : { passed: false, feedback: "No active trial task." };
   const voiceScore = task ? scoreVoiceAnswer(answer, task) : { label: "Needs coaching" };
+  const submissionPhase = trialState.firstSubmitted ? "improved" : "first";
   if (!trialState.firstSubmitted) {
     trialState.firstSubmitted = Boolean(answer);
     trialState.firstAnswer = answer;
@@ -2389,6 +2478,14 @@ fields.answerForm.addEventListener("submit", (event) => {
     trialState.completed = Boolean(answer);
     trialState.taskKey = task?.key || "";
   }
+  trackLearningEvent("learning_lesson_answer_submit", {
+    funnel_step: "lesson",
+    answer_phase: submissionPhase,
+    has_answer: Boolean(answer),
+    passed: Boolean(result.passed),
+    voice_score: voiceScore.label,
+    answer_length: answer.length
+  });
   fields.chatLog.insertAdjacentHTML(
     "beforeend",
     messageTemplate("user", persona.learnerLabel, answer || "I do not know how to answer yet.")
