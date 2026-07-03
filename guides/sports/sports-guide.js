@@ -7,8 +7,8 @@
   const defaultContext = {
     landing_name: body.dataset.landingName || body.dataset.pageSlug || "sports_guide",
     page_category: body.dataset.pageCategory || "sports_guide",
-    page_type: searchParams.get("page_type") || "sports_comparison_guide",
-    landing_type: searchParams.get("page_type") || "sports_comparison_guide",
+    page_type: searchParams.get("page_type") || body.dataset.pageType || "sports_comparison_guide",
+    landing_type: searchParams.get("page_type") || body.dataset.pageType || "sports_comparison_guide",
     content_type: body.dataset.pageCategory || "sports_guide",
     topic: body.dataset.topic || "sports_streaming",
     intent: body.dataset.intent || "sports_comparison",

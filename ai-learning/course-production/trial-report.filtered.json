@@ -1,0 +1,41 @@
+{
+  "trial_date": "2026-07-03",
+  "selected_topic": "How to Watch Fifa World Cup 2026 Bracket Without Cable",
+  "url": "https://89gameshub.com/guides/sports/how-to-watch-fifa-world-cup-2026-bracket-without-cable/",
+  "page_type": "sports_watch_guide",
+  "score": 90.8,
+  "selected_matches_top_candidate": true,
+  "sitemap_updated": true,
+  "qa_result": "pass",
+  "page_checks": {
+    "page_exists": true,
+    "has_h1": true,
+    "has_short_answer": true,
+    "has_last_checked": true,
+    "has_sources_checked": true,
+    "faq_count": 6,
+    "related_guides_count": 3,
+    "official_links_count": 20,
+    "has_interaction_form": true,
+    "missing_events": [],
+    "qa_pass": true
+  },
+  "build_brief": {},
+  "measurement_plan": {
+    "24h": [
+      "confirm page loads and links still resolve",
+      "confirm page is discoverable and tracking fires",
+      "confirm no source correction is needed"
+    ],
+    "3d": [
+      "check impressions and CTR",
+      "check scroll depth and interaction completion",
+      "check official link clicks"
+    ],
+    "7d": [
+      "expand cluster if impressions, clicks, and interaction exist",
+      "rewrite title and Short Answer if impressions exist but CTR is weak",
+      "change result copy or CTA if interaction exists but outbound is weak"
+    ]
+  }
+}

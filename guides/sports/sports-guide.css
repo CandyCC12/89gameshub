@@ -254,6 +254,17 @@ h1 {
   color: var(--ink);
 }
 
+select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+}
+
 .page-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;
@@ -397,6 +408,30 @@ p {
 .callout.danger {
   border-left-color: var(--danger);
   background: #fff1f1;
+}
+
+.finder-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.finder-result {
+  margin-top: 14px;
+  border: 1px solid #c8dfcf;
+  border-radius: 8px;
+  background: var(--soft);
+  padding: 14px;
+}
+
+.finder-result[hidden] {
+  display: none;
+}
+
+.finder-result strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--green-dark);
 }
 
 .official-box,
@@ -561,7 +596,8 @@ footer {
   .card-grid,
   .related-grid,
   .cta-grid,
-  .official-actions {
+  .official-actions,
+  .finder-grid {
     grid-template-columns: 1fr;
   }
 

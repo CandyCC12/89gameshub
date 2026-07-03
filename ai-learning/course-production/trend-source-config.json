@@ -1,0 +1,176 @@
+{
+  "site": "https://89gameshub.com",
+  "default_region": "US",
+  "notes": [
+    "seed_candidates are used when live collection is unavailable or disabled",
+    "rss_sources are optional and may fail in restricted environments"
+  ],
+  "live_sources": [
+    {
+      "name": "google_news_world_cup_recent",
+      "source_type": "google_news_rss",
+      "query": "World Cup when:3d",
+      "trend_type": "realtime",
+      "region": "US"
+    },
+    {
+      "name": "google_news_payment_apps_recent",
+      "source_type": "google_news_rss",
+      "query": "Venmo OR Zelle OR \"Cash App\" when:7d",
+      "trend_type": "stable evergreen",
+      "region": "US"
+    },
+    {
+      "name": "fixed_search_world_cup_watch",
+      "source_type": "google_news_rss",
+      "query": "\"World Cup\" (watch OR stream OR TV) when:7d",
+      "trend_type": "realtime support",
+      "region": "US"
+    }
+  ],
+  "live_candidate_rules": [
+    {
+      "topic": "World Cup Games Today: Where to Watch Legally",
+      "match_any": ["world cup", "fifa", "today", "watch", "stream"],
+      "match_all": ["world cup"],
+      "exclude_any": ["video game", "ticket"],
+      "boost_per_hit": 0.03,
+      "max_boost": 0.12
+    },
+    {
+      "topic": "Best Apps to Watch World Cup 2026",
+      "match_any": ["world cup", "app", "stream", "broadcast", "fox", "telemundo"],
+      "match_all": ["world cup"],
+      "exclude_any": ["video game"],
+      "boost_per_hit": 0.02,
+      "max_boost": 0.08
+    },
+    {
+      "topic": "Where to Watch World Cup 2026 Without Cable",
+      "match_any": ["world cup", "without cable", "cord cutter", "streaming", "live tv"],
+      "match_all": ["world cup"],
+      "boost_per_hit": 0.02,
+      "max_boost": 0.08
+    },
+    {
+      "topic": "Venmo vs Zelle vs Cash App",
+      "match_any": ["venmo", "zelle", "cash app", "comparison", "versus", "vs"],
+      "exclude_any": ["lawsuit", "stock"],
+      "boost_per_hit": 0.02,
+      "max_boost": 0.06
+    },
+    {
+      "topic": "Zelle Not Working",
+      "match_any": ["zelle", "down", "outage", "not working", "payment failed"],
+      "match_all": ["zelle"],
+      "boost_per_hit": 0.03,
+      "max_boost": 0.09
+    }
+  ],
+  "seed_candidates": [
+    {
+      "topic": "World Cup Games Today: Where to Watch Legally",
+      "slug": "/guides/sports/world-cup-games-today/",
+      "region": "US",
+      "source": "world_cup_event_window",
+      "trend_type": "realtime",
+      "user_intent": "Find today's legal viewing options fast",
+      "page_type": "new_realtime_page",
+      "monetization_path": "official outbound, ads, email reminder",
+      "risk": "low",
+      "trend_strength": 1.0,
+      "intent_clarity": 0.95,
+      "commercial_value": 0.85,
+      "page_reusability": 0.85,
+      "geo_citation_fit": 0.95,
+      "risk_safety": 0.95,
+      "action": "build",
+      "evidence_urls": [
+        "https://www.fifa.com/",
+        "https://www.foxsports.com/soccer/fifa-world-cup"
+      ]
+    },
+    {
+      "topic": "Best Apps to Watch World Cup 2026",
+      "region": "US",
+      "source": "world_cup_streaming_cluster",
+      "trend_type": "seasonal",
+      "user_intent": "Compare legal streaming apps for World Cup viewing",
+      "page_type": "evergreen_expansion_page",
+      "monetization_path": "official outbound, ads, affiliate later",
+      "risk": "low",
+      "trend_strength": 0.82,
+      "intent_clarity": 0.88,
+      "commercial_value": 0.9,
+      "page_reusability": 0.95,
+      "geo_citation_fit": 0.9,
+      "risk_safety": 0.95,
+      "action": "build_secondary",
+      "evidence_urls": [
+        "https://89gameshub.com/guides/sports/best-streaming-apps-live-sports/"
+      ]
+    },
+    {
+      "topic": "Where to Watch World Cup 2026 Without Cable",
+      "region": "US",
+      "source": "world_cup_cord_cutter_cluster",
+      "trend_type": "seasonal",
+      "user_intent": "Find legal no-cable viewing paths",
+      "page_type": "evergreen_expansion_page",
+      "monetization_path": "official outbound, ads, affiliate later",
+      "risk": "low",
+      "trend_strength": 0.8,
+      "intent_clarity": 0.9,
+      "commercial_value": 0.88,
+      "page_reusability": 0.95,
+      "geo_citation_fit": 0.92,
+      "risk_safety": 0.95,
+      "action": "build_secondary",
+      "evidence_urls": [
+        "https://89gameshub.com/guides/sports/watch-football-without-cable/"
+      ]
+    },
+    {
+      "topic": "Venmo vs Zelle vs Cash App",
+      "region": "US",
+      "source": "priority_1_keyword_spec",
+      "trend_type": "stable evergreen",
+      "user_intent": "Compare payment apps for safety, use case, and convenience",
+      "page_type": "evergreen_expansion_page",
+      "monetization_path": "official outbound, ads, affiliate later",
+      "risk": "medium",
+      "trend_strength": 0.55,
+      "intent_clarity": 0.95,
+      "commercial_value": 0.88,
+      "page_reusability": 0.95,
+      "geo_citation_fit": 0.93,
+      "risk_safety": 0.75,
+      "action": "watch_high",
+      "evidence_urls": [
+        "https://www.zellepay.com/",
+        "https://venmo.com/",
+        "https://cash.app/"
+      ]
+    },
+    {
+      "topic": "Zelle Not Working",
+      "region": "US",
+      "source": "priority_1_keyword_spec",
+      "trend_type": "stable evergreen",
+      "user_intent": "Understand whether the problem is Zelle, the bank, or payment pending",
+      "page_type": "new_app_problem_page",
+      "monetization_path": "official outbound, ads",
+      "risk": "medium",
+      "trend_strength": 0.62,
+      "intent_clarity": 0.95,
+      "commercial_value": 0.82,
+      "page_reusability": 0.92,
+      "geo_citation_fit": 0.9,
+      "risk_safety": 0.76,
+      "action": "build_secondary",
+      "evidence_urls": [
+        "https://www.zellepay.com/faq"
+      ]
+    }
+  ]
+}
